@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Andón</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <img src="../assets/img/Logo_Eaton.png" alt="Andón Logo" class="logo">
+            <h1>Sistema de Andón</h1>
+            <div class="header-info">
+                <span id="timestamp" class="timestamp"></span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Department Dashboard -->
+            <section class="dashboard-section">
+                <h2>📊 Estado de Departamentos</h2>
+                <div class="departments-grid" id="departmentsGrid">
+                    <!-- Generado dinámicamente -->
+                </div>
+            </section>
+
+            <!-- Alert Panel (muestra el estado del departamento seleccionado) -->
+            <section class="alert-section" id="alertSection" style="display:none;">
+                <div class="alert-status" id="alertStatus">
+                    <div class="alert-light off" id="alertLight"></div>
+                    <h2 id="statusText">Andón Inactivo</h2>
+                    <p id="statusSubtext">Haz clic para activar</p>
+                </div>
+            </section>
+
+            <!-- Timer Section with Phases -->
+            <section class="timer-section">
+                <div class="timers-grid">
+                    <div class="timer-display">
+                        <h4>Tiempo Total</h4>
+                        <div class="timer" id="timer">00:00:00</div>
+                    </div>
+                    <div class="timer-display" id="responseTimeContainer" style="display:none;">
+                        <h4>Tiempo de Respuesta</h4>
+                        <div class="timer timer-secondary" id="responseTime">00:00:00</div>
+                    </div>
+                    <div class="timer-display" id="resolutionTimeContainer" style="display:none;">
+                        <h4>Tiempo de Resolución</h4>
+                        <div class="timer timer-secondary" id="resolutionTime">00:00:00</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Section - Información primero -->
+            <section class="data-section">
+                <div class="card">
+                    <h3>📋 Información del Andón</h3>
+                    <p class="required-note"><span class="required-asterisk">*</span> Campos requeridos</p>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="label">Zona/Estación: <span class="required-asterisk">*</span></span>
+                            <input type="text" id="stationInput" placeholder="Ej: Estación A1" class="form-input required">
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Departamento: <span class="required-asterisk">*</span></span>
+                            <select id="departmentSelect" class="form-input required">
+                                <option value="">Seleccionar departamento</option>
+                                <option value="calidad">Calidad</option>
+                                <option value="ingenieria">Ingenieria</option>
+                                <option value="mantenimiento">Mantenimiento</option>
+                                <option value="ATS">ATS</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Problema: <span class="required-asterisk">*</span></span>
+                            <input type="text" id="problemInput" placeholder="Descripción del problema" class="form-input required">
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Número de Empleado: <span class="required-asterisk">*</span></span>
+                            <input type="text" id="responsibleInput" placeholder="Ej: 12345" class="form-input required">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Escalation Section -->
+                <div class="card" id="escalationSection" style="display:none;">
+                    <h3>🔄 Escalar a Otro Departamento</h3>
+                    <p class="escalation-info">Selecciona a qué departamento escalar este andón:</p>
+                    <div class="escalation-buttons" id="escalationButtons">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                    <div id="escalationHistory" class="escalation-history" style="display:none;">
+                        <h4>Historial de Escaladas:</h4>
+                        <ul id="escalationList"></ul>
+                    </div>
+                </div>
+
+                <!-- Escalation Reason Modal -->
+                <div id="escalationModal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <h3>Especificar Motivo de Escalación</h3>
+                        <p id="escalationModalDept" style="font-weight: bold; color: #1976d2; margin: 10px 0;"></p>
+                        
+                        <div class="form-group">
+                            <label for="escalationReason">Motivo de la escalación <span class="required-asterisk">*</span></label>
+                            <textarea id="escalationReason" class="form-input" placeholder="Ej: Equipo no puede resolver en el tiempo estimado, requiere soporte especializado..." style="resize: vertical; min-height: 80px;"></textarea>
+                        </div>
+
+                        <div class="modal-buttons">
+                            <button id="cancelEscalationBtn" class="btn btn-secondary" onclick="document.getElementById('escalationModal').style.display='none';">Cancelar</button>
+                            <button id="confirmEscalationBtn" class="btn btn-success">Confirmar Escalación</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Arrival Modal - Validar empleado que llega -->
+                <div id="teamArrivalModal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <h3>Equipo Llegó al Sitio</h3>
+                        <p id="arrivalDeptInfo" style="color: var(--text-secondary); margin: 10px 0;"></p>
+                        
+                        <div class="form-group">
+                            <label for="arrivedEmployeeId">Número de Empleado que Atiende <span class="required-asterisk">*</span></label>
+                            <input type="text" id="arrivedEmployeeId" class="form-input" placeholder="Ingresa tu número de empleado" autofocus>
+                        </div>
+
+                        <div class="modal-buttons">
+                            <button id="cancelArrivalBtn" class="btn btn-secondary">Cancelar</button>
+                            <button id="confirmArrivalBtn" class="btn btn-success">Confirmar Llegada</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SharePoint Connection - Desactivado -->
+                <div class="card" style="display:none;">
+                    <h3>Conexión con Excel/SharePoint</h3>
+                    <div class="connection-status" id="connectionStatus">
+                        <span class="status-indicator disconnected"></span>
+                        <span id="connectionText">No conectado</span>
+                    </div>
+                    <button id="connectBtn" class="btn btn-secondary">Conectar a SharePoint</button>
+                    <button id="syncBtn" class="btn btn-secondary disabled" disabled>Sincronizar Datos</button>
+                </div>
+
+                <!-- Recent Records -->
+                <div class="card" id="recordsCard">
+                    <div class="records-header">
+                        <h3>Registros de Andón</h3>
+                        <div class="records-actions">
+                            <button id="expandTableBtn" class="btn btn-secondary" title="Expandir tabla completa">📊 Ver Todo</button>
+                            <button id="downloadExcelBtn" class="btn btn-secondary" title="Descargar como Excel">💾 Excel</button>
+                        </div>
+                    </div>
+                    <div class="records-table" id="recordsTable">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Hora Inicio</th>
+                                    <th>Departamento</th>
+                                    <th>Zona</th>
+                                    <th>Tiempo Respuesta</th>
+                                    <th>Tiempo Resolución</th>
+                                    <th>Tiempo Total</th>
+                                    <th>Problema</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: #999;">No hay registros aún</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Full Table Modal -->
+                <div id="fullTableModal" class="modal" style="display:none;">
+                    <div class="modal-content modal-full-table">
+                        <div class="modal-header">
+                            <h2>Historial Completo de Andones</h2>
+                            <button class="modal-close" onclick="document.getElementById('fullTableModal').style.display='none';">&times;</button>
+                        </div>
+                        <div class="records-table" id="fullTableContainer">
+                            <table id="fullTable">
+                                <thead>
+                                    <tr>
+                                        <th>Hora Inicio</th>
+                                        <th>Hora Fin</th>
+                                        <th>Departamento</th>
+                                        <th>Zona</th>
+                                        <th>Problema</th>
+                                        <th>Reportado Por</th>
+                                        <th>Respondió</th>
+                                        <th>T. Respuesta</th>
+                                        <th>T. Resolución</th>
+                                        <th>T. Total</th>
+                                        <th>Escalaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fullTableBody">
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; color: #999;">No hay registros aún</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Controls Section - Botones después de información -->
+            <section class="controls-section">
+                <div class="button-group">
+                    <button id="activateBtn" class="btn btn-primary">Activar Andón</button>
+                    <button id="arrivedBtn" class="btn btn-warning disabled" disabled>Equipo Llegó</button>
+                    <button id="deactivateBtn" class="btn btn-danger disabled" disabled>Desactivar Andón</button>
+                </div>
+
+                <!-- Sound Control -->
+                <div class="sound-control">
+                    <label for="soundToggle">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span>Sonido de Alerta Activo</span>
+                    </label>
+                </div>
+            </section>
+        </main>
+
+        <!-- Audio Element for Alert Sound -->
+        <audio id="alertSound" loop>
+            <source src="alert.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

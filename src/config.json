@@ -1,0 +1,76 @@
+{
+  "app": {
+    "name": "Sistema de Andón",
+    "version": "1.0.0",
+    "description": "Sistema de alertas visuales para manufactura con integración SharePoint"
+  },
+  "display": {
+    "theme": "light",
+    "primaryColor": "#ff4444",
+    "alertColor": "#d32f2f",
+    "successColor": "#4CAF50",
+    "enableAnimations": true,
+    "pulseInterval": 800,
+    "blinkInterval": 600
+  },
+  "sound": {
+    "enabled": true,
+    "volume": 0.7,
+    "frequency": 1000,
+    "duration": 0.5,
+    "loop": true,
+    "useCustomFile": false,
+    "customFilePath": "assets/alert.mp3"
+  },
+  "timer": {
+    "updateInterval": 100,
+    "format": "HH:MM:SS",
+    "displayInTitle": false,
+    "trackIntermediateTimes": true,
+    "showResponseTime": true,
+    "showResolutionTime": true
+  },
+  "departments": [
+    "calidad",
+    "mantenimiento",
+    "produccion",
+    "almacen",
+    "logistica",
+    "seguridad",
+    "recursos_humanos",
+    "otro"
+  ],
+  "data": {
+    "autoSave": true,
+    "autoSaveInterval": 5000,
+    "storageType": "localStorage",
+    "maxRecords": 1000,
+    "clearOldRecordsAfterDays": 90
+  },
+  "sharepoint": {
+    "enabled": true,
+    "autoSync": false,
+    "syncInterval": 300000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "shortcuts": {
+    "toggleAndon": " ",
+    "mute": "m",
+    "clearData": null,
+    "openDevTools": "F12"
+  },
+  "notifications": {
+    "enabled": true,
+    "duration": 4000,
+    "position": "top-right",
+    "sound": false
+  },
+  "defaults": {
+    "priority": "media",
+    "station": "",
+    "problem": "",
+    "responsible": "",
+    "department": ""
+  }
+}
