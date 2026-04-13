@@ -2,6 +2,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  saveFile: (options) => ipcRenderer.invoke('save-file', options),
+  exportToFile: (data) => ipcRenderer.invoke('export-to-file', data),
   ipcRenderer: {
     on: (channel, func) => {
       const validChannels = ['app-version'];

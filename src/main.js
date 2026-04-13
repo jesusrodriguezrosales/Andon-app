@@ -1,6 +1,8 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
+const fs = require('fs');
+const XLSX = require('xlsx');
 
 // Cargar variables de entorno
 require('dotenv').config();
@@ -63,6 +65,77 @@ ipcMain.handle('get-env-vars', () => {
       )
     }
   };
+});
+
+// Save file dialog
+ipcMain.handle('save-file', async (event, options) => {
+  const { defaultPath = 'andones.xlsx', filters = [] } = options;
+  
+  const result = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: defaultPath,
+    filters: filters.length > 0 ? filters : [
+      { name: 'Excel Files', extensions: ['xlsx'] },
+      { name: 'CSV Files', extensions: ['csv'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+  
+  return result; // { canceled: boolean, filePath: string }
+});
+
+// Handle export to Excel/CSV
+ipcMain.handle('export-to-file', async (event, data) => {
+  try {
+    const { filePath, records } = data;
+    const isCSV = filePath.toLowerCase().endsWith('.csv');
+    
+    // Preparar datos
+    const excelData = records.map(record => ({
+      'Hora Inicio': record.startTime || '-',
+      'Hora Fin': record.endTime || '-',
+      'Departamento': record.department || '-',
+      'Zona': record.station || '-',
+      'Problema': record.problem || '-',
+      'Reportado Por': record.reportedBy || '-',
+      'Respondió': record.employeeResponded || '-',
+      'T. Respuesta': record.responseTime || '-',
+      'T. Resolución': record.resolutionTime || '-',
+      'T. Total': record.duration || '-'
+    }));
+    
+    if (isCSV) {
+      // Guardar como CSV
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      XLSX.writeFile({ Sheet1: ws }, filePath);
+    } else {
+      // Guardar como Excel
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Andones');
+      
+      // Ajustar ancho de columnas
+      const colWidths = [
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 14 },
+        { wch: 12 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 20 }
+      ];
+      ws['!cols'] = colWidths;
+      
+      XLSX.writeFile(wb, filePath);
+    }
+    
+    return { success: true, message: 'Archivo exportado exitosamente' };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
 });
 
 // Menu
